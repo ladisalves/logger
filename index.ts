@@ -1,8 +1,6 @@
 import * as Sentry from '@sentry/node'
 import * as stream from 'stream'
-
 import { createLogger, stdSerializers } from 'bunyan'
-
 import { serializeContext } from './serializeContext'
 
 Sentry.init({
@@ -17,9 +15,12 @@ const getLogLevelBasedOnNodeEnv = () => {
 }
 
 class SentryStream extends stream.Writable {
-  _write(chunk, enc, next) {
+  _write (chunk, enc, next) {
     const message = JSON.parse(chunk.toString())
-    Sentry.captureMessage(`${process.env.NODE_ENV} ${message.name} - ${message.msg}`, Sentry.Severity.Fatal)
+    Sentry.captureMessage(
+      `${process.env.NODE_ENV} ${message.name} - ${message.msg}`,
+      Sentry.Severity.Fatal
+    )
     next()
   }
 }
@@ -33,11 +34,11 @@ export const getLogger = (serviceName?: string, getRrid?) => {
       {
         name: 'std',
         stream: new stream.Writable({
-          write: function(chunk, encoding, next) {
+          write: function (chunk, encoding, next) {
             const message = JSON.parse(chunk.toString())
             try {
               message.reqId = getRrid ? getRrid() : message.reqId
-            } catch (err) { }
+            } catch (err) {}
 
             console.log(JSON.stringify(message))
 

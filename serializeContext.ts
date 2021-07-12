@@ -1,22 +1,36 @@
-export function serializeContext(ctx) {
+const parseProps = (context) => {
+  const newContext = {}
+  const allowedFields = ['user', 'headers', 'requestId', 'ip']
+
+  for (const prop in context) {
+    if (Object.prototype.hasOwnProperty.call(context, prop) && allowedFields.includes(prop)) {
+      newContext[prop] = context[prop]
+    }
+  }
+
+  return newContext
+}
+
+const parseHeaders = (headers = {}) => {
+  const newHeaders = {}
+  const allowedHeaderFields = ['x-requestid']
+
+  for (const prop in headers) {
+    if (Object.prototype.hasOwnProperty.call(headers, prop) && allowedHeaderFields.includes(prop)) {
+      newHeaders[prop] = headers[prop]
+    }
+  }
+
+  return newHeaders
+}
+
+export function serializeContext (ctx) {
   try {
-    const newContext = {}
-    const allowedFields = [ 'user', 'headers', 'requestId', 'ip' ]
-    for (const prop in ctx) {
-      if (ctx.hasOwnProperty(prop) && allowedFields.includes(prop)) {
-        newContext[prop] = ctx[prop]
-      }
+    const newContext = {
+      ...parseProps(ctx),
+      headers: parseHeaders(ctx.headers)
     }
-    if (newContext['headers']) {
-      const newHeaders  = {}
-      const allowedHeaderFields  = [ 'x-requestid' ]
-      for (const prop in newContext['headers']) {
-        if (newContext['headers'].hasOwnProperty(prop) && allowedHeaderFields.includes(prop)) {
-          newHeaders[prop] = newContext['headers'][prop]
-        }
-      }
-      newContext['headers'] = newHeaders
-    }
+
     return newContext
   } catch (err) { // dont cause side effects on error
     return ctx
